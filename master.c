@@ -6,7 +6,10 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <ctype.h>
-#include <stdbool.h> 
+#include <stdbool.h> // Include the stdbool.h header
+
+
+
 
 #define MAX_WORDS_IN_DICT 100000
 #define MAX_WORD_LENGTH 100
@@ -15,16 +18,15 @@
 char dictionary[MAX_WORDS_IN_DICT][MAX_WORD_LENGTH];
 int dictionarySize = 0;
 
-// Function Prototypes
 void loadDictionary(const char* dictionaryPath);
 bool findWordInDictionary(const char* word);
 void processFile(const char* filePath);
 void traverseDir(const char* dirPath);
 void toLowerCase(char* str);
-void toUpperCase(char* str);
 bool isAllUpperCase(const char* str);
 bool checkWord(const char* word);
-bool isPunctuation(char c);
+void stripPunctuationAndCheckWord(char* word, const char* filePath, int line, int wordStartColumn);
+
 
 int main(int argc, char* argv[]) {
     if (argc < 3) {
@@ -82,7 +84,6 @@ void processFile(const char* filePath) {
     char buffer[BUFFER_SIZE];
     ssize_t bytesRead;
     int line = 1, column = 1;
-    bool isWord = false;
     char word[MAX_WORD_LENGTH];
     int wordIndex = 0;
     int wordStartColumn = 1;
@@ -90,41 +91,32 @@ void processFile(const char* filePath) {
     while ((bytesRead = read(fd, buffer, sizeof(buffer))) > 0) {
         for (ssize_t i = 0; i < bytesRead; ++i) {
             char c = buffer[i];
-            if (isalnum(c) || (isWord && c == '-' && i + 1 < bytesRead && isalnum(buffer[i + 1]))) {
-                if (!isWord) wordStartColumn = column;
+            if (isalnum(c) || c == '\'' || c == '-' || c == '(' || c == '[' || c == '{') {
+                if (wordIndex == 0) wordStartColumn = column; // Mark the start of a new word
                 word[wordIndex++] = c;
-                isWord = true;
             } else {
-                if (isWord) {
-                    word[wordIndex] = '\0';
-                    while (wordIndex > 0 && isPunctuation(word[wordIndex - 1])) {
-                        word[--wordIndex] = '\0';
-                    }
-                    if (!checkWord(word)) {
-                        printf("%s (%d, %d): %s\n", filePath, line, wordStartColumn, word);
-                    }
+                if (wordIndex > 0) {
+                    word[wordIndex] = '\0'; // Null-terminate the current word
+                    stripPunctuationAndCheckWord(word, filePath, line, wordStartColumn);
                     wordIndex = 0;
-                    isWord = false;
                 }
                 if (c == '\n') {
                     line++;
-                    column = 0;
+                    column = 0; // Reset column at the start of a new line
                 }
             }
             column++;
         }
     }
 
-    if (isWord) {
+    // Check for the last word in the buffer
+    if (wordIndex > 0) {
         word[wordIndex] = '\0';
-        if (!checkWord(word)) {
-            printf("%s (%d, %d): %s\n", filePath, line, wordStartColumn, word);
-        }
+        stripPunctuationAndCheckWord(word, filePath, line, wordStartColumn);
     }
 
     close(fd);
 }
-
 void traverseDir(const char* dirPath) {
     DIR* dir = opendir(dirPath);
     if (dir == NULL) {
@@ -134,17 +126,14 @@ void traverseDir(const char* dirPath) {
 
     struct dirent* entry;
     while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_name[0] == '.') continue;
+        if (entry->d_name[0] == '.') continue; // Skip hidden files and directories
 
         char pathBuffer[1024];
         snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", dirPath, entry->d_name);
 
-        struct stat pathStat;
-        if (stat(pathBuffer, &pathStat) != 0) continue;
-
-        if (S_ISDIR(pathStat.st_mode)) {
+        if (entry->d_type == DT_DIR) {
             traverseDir(pathBuffer);
-        } else if (S_ISREG(pathStat.st_mode) && strstr(entry->d_name, ".txt")) {
+        } else if (entry->d_type == DT_REG && strstr(entry->d_name, ".txt")) {
             processFile(pathBuffer);
         }
     }
@@ -154,19 +143,14 @@ void traverseDir(const char* dirPath) {
 
 void toLowerCase(char* str) {
     for (int i = 0; str[i]; i++) {
-        str[i] = tolower((unsigned char)str[i]);
+        str[i] = tolower(str[i]);
     }
 }
 
-void toUpperCase(char* str) {
-    for (int i = 0; str[i]; i++) {
-        str[i] = toupper((unsigned char)str[i]);
-    }
-}
 
 bool isAllUpperCase(const char* str) {
     for (int i = 0; str[i]; i++) {
-        if (islower((unsigned char)str[i])) {
+        if (islower(str[i])) {
             return false;
         }
     }
@@ -174,25 +158,28 @@ bool isAllUpperCase(const char* str) {
 }
 
 bool checkWord(const char* word) {
-    char temp[MAX_WORD_LENGTH];
-    strcpy(temp, word);
-    toLowerCase(temp);
-
-    if (findWordInDictionary(word) || findWordInDictionary(temp)) {
+    if (findWordInDictionary(word)) {
         return true;
     }
-
-    if (isupper(word[0])) {
-        temp[0] = toupper(temp[0]);
-        if (findWordInDictionary(temp)) return true;
-
-        toUpperCase(temp);
-        if (findWordInDictionary(temp)) return true;
+    // If the word is all uppercase or starts with an uppercase letter, try checking its lowercase version.
+    if (isupper(word[0]) || isAllUpperCase(word)) {
+        char temp[MAX_WORD_LENGTH];
+        strcpy(temp, word);
+        toLowerCase(temp);
+        return findWordInDictionary(temp);
     }
-
     return false;
 }
 
-bool isPunctuation(char c) {
-    return strchr(",.;:?!\")([]{}'`-", c) != NULL;
+
+void stripPunctuationAndCheckWord(char* word, const char* filePath, int line, int wordStartColumn) {
+    // Strip punctuation from the start and end of the word
+    char *start = word, *end = word + strlen(word) - 1;
+    while (ispunct(*start)) start++;
+    while (end > start && ispunct(*end)) end--;
+    *(end + 1) = '\0';
+
+    if (!checkWord(start)) {
+        printf("%s (%d, %d): %s\n", filePath, line, wordStartColumn, start);
+    }
 }
