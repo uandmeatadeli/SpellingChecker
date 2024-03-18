@@ -1,3 +1,4 @@
+// #include "spchk.h"
 #include <dirent.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -600,7 +601,7 @@ bool checkSpecialUpperCase(const char* word) {
 
 bool checkWord(const char* word) {
     char temp[MAX_WORD_LENGTH] = {0};
-    char firstCap[MAX_WORD_LENGTH] = {0};
+    //char firstCap[MAX_WORD_LENGTH] = {0};
     bool isExactMatch = findWordInDictionary(word);
 
     // Handle exact match (case-sensitive).

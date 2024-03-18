@@ -1,19 +1,26 @@
+# CC = gcc
+# CFLAGS = -Wall -fsanitize=address -std=c99 -O2 -g
+
+# all: spchk
+
+# spchk: spchk.o 
+# 	$(CC) $(CFLAGS) -o $@ $^
+
+# spchk.o: spchk.c spchk.h
+# 	$(CC) $(CFLAGS) -c -o $@ spchk.c
+
+# clean:
+# 	rm -f *.o spchk
 CC = gcc
-CFLAGS = -Wall -Wextra -g
+CFLAGS = -Wall -fsanitize=address -std=c99 -O2 -g
 
 all: spchk
 
-spchk: spchk.o dictionary.o file_reader.o
-	$(CC) $(CFLAGS) -o spchk spchk.o dictionary.o file_reader.o
+spchk: spchk.o 
+	$(CC) $(CFLAGS) -o $@ $^
 
-spchk.o: spchk.c
-	$(CC) $(CFLAGS) -c spchk.c
-
-dictionary.o: dictionary.c
-	$(CC) $(CFLAGS) -c dictionary.c
-
-file_reader.o: file_reader.c
-	$(CC) $(CFLAGS) -c file_reader.c
+spchk.o: spchk.c 
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
 	rm -f *.o spchk
