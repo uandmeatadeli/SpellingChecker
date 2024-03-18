@@ -296,10 +296,17 @@ void processFile(const char* filePath) {
     // Handle the last word in the file if it doesn't end with a newline
     if (isWord) {
         word[wordIndex] = '\0'; // Ensure the last word is null-terminated
-        stripPunctuation(word); // Strip punctuation at the beginning and end
+        stripPunctuation(word); // Strip punctuation at the beginning and end of the word
 
-        if (!checkWord(word)) {
-            printf("%s (%d, %d): %s\n", filePath, line, wordStartColumn, word);
+        // Now, handle the possibly hyphenated or regular last word with punctuation removed
+        if (strchr(word, '-')) {
+            if (!checkHyphenatedWord(word)) {
+                printf("%s (%d, %d): %s\n", filePath, line, wordStartColumn, word);
+            }
+        } else {
+            if (!checkWord(word)) {
+                printf("%s (%d, %d): %s\n", filePath, line, wordStartColumn, word);
+            }
         }
     }
 
