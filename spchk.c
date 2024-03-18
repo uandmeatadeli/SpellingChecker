@@ -1,4 +1,4 @@
-// #include "spchk.h"
+#include "spchk.h"
 #include <dirent.h>
 #include <fcntl.h>
 #include <stdio.h>
@@ -9,30 +9,30 @@
 #include <ctype.h>
 #include <stdbool.h> 
 
-#define MAX_WORDS_IN_DICT 1000000
-#define MAX_WORD_LENGTH 100
-#define BUFFER_SIZE 4096
+// #define MAX_WORDS_IN_DICT 1000000
+// #define MAX_WORD_LENGTH 100
+// #define BUFFER_SIZE 4096
 
 char dictionary[MAX_WORDS_IN_DICT][MAX_WORD_LENGTH];
 int dictionarySize = 0;
 
-// Function Prototypes
-void loadDictionary(const char* dictionaryPath);
-bool findWordInDictionary(const char* word);
-void processFile(const char* filePath);
-void traverseDir(const char* dirPath);
-//void toLowerCase(char* str);
-void toLowerCase(const char* input, char* output);
-void toUpperCase(char* str);
-bool isAllUpperCase(const char* str);
-bool checkWord(const char* word);
-bool isPunctuation(char c);
-void testStripPunctuation(const char* word, const char* expectedResult);
-void isCapitalizationAcceptable(const char* word, const char* lowercaseVersion);
-bool findLowerCaseInDictionary(const char* word);
-bool checkSpecialUpperCase(const char* word);
-void stripPunctuation(char* word);
-bool checkHyphenatedWord(const char* word);
+// // Function Prototypes
+// void loadDictionary(const char* dictionaryPath);
+// bool findWordInDictionary(const char* word);
+// void processFile(const char* filePath);
+// void traverseDir(const char* dirPath);
+// //void toLowerCase(char* str);
+// void toLowerCase(const char* input, char* output);
+// void toUpperCase(char* str);
+// bool isAllUpperCase(const char* str);
+// bool checkWord(const char* word);
+// bool isPunctuation(char c);
+// void testStripPunctuation(const char* word, const char* expectedResult);
+// void isCapitalizationAcceptable(const char* word, const char* lowercaseVersion);
+// bool findLowerCaseInDictionary(const char* word);
+// bool checkSpecialUpperCase(const char* word);
+// void stripPunctuation(char* word);
+// bool checkHyphenatedWord(const char* word);
 
 int main(int argc, char* argv[]) {
     if (argc < 3) {
@@ -315,16 +315,36 @@ void traverseDir(const char* dirPath) {
     }
 
     struct dirent* entry;
-    while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_name[0] == '.') continue; // Skip hidden files and directories
+    char pathBuffer[1024];
+    struct stat pathStat;
 
-        char pathBuffer[1024];
+    while ((entry = readdir(dir)) != NULL) {
+        // Skip "." and ".."
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+            continue;
+        }
+
+        // Skip any files or directories that begin with "."
+        if (entry->d_name[0] == '.') {
+            continue;
+        }
+
         snprintf(pathBuffer, sizeof(pathBuffer), "%s/%s", dirPath, entry->d_name);
 
-        if (entry->d_type == DT_DIR) {
+        if (stat(pathBuffer, &pathStat) != 0) {
+            // Optionally handle stat error
+            continue;
+        }
+
+        if (S_ISDIR(pathStat.st_mode)) {
+            // It's a directory, recurse into it
             traverseDir(pathBuffer);
-        } else if (entry->d_type == DT_REG && strstr(entry->d_name, ".txt")) {
-            processFile(pathBuffer);
+        } else if (S_ISREG(pathStat.st_mode)) {
+            // It's a regular file, check if it ends with ".txt"
+            char* ext = strrchr(entry->d_name, '.');
+            if (ext != NULL && strcmp(ext, ".txt") == 0) {
+                processFile(pathBuffer);
+            }
         }
     }
 
@@ -730,9 +750,9 @@ void testStripPunctuation(const char* word, const char* expectedResult) {
     stripPunctuation(testWord);
     
     if (strcmp(testWord, expectedResult) == 0) {
-        printf("Test passed: %s\n", word);
+        //printf("Test passed: %s\n", word);
     } else {
-        printf("Test failed: %s (Expected: %s, Actual: %s)\n", word, expectedResult, testWord);
+        //printf("Test failed: %s (Expected: %s, Actual: %s)\n", word, expectedResult, testWord);
     }
 }
 

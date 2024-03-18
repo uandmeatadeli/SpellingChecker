@@ -1,7 +1,7 @@
 #ifndef SPCHK_H
 #define SPCHK_H
 
-#define MAX_WORDS_IN_DICT 100000
+#define MAX_WORDS_IN_DICT 110000
 #define MAX_WORD_LENGTH 100
 #define BUFFER_SIZE 1024
 
