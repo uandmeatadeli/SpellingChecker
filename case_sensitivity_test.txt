@@ -1,1 +1,9 @@
-Hello hello HELLO HeLlO 
+Hello hello HELLO HeLlO  HeLlO is incorrect
+
+
+MacDonald good
+MACDONALD good
+Macdonald and macdonald  are incorrect
+
+MacArthur
+MACARTHUR
