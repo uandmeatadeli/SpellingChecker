@@ -1,2 +1,4 @@
 apple correct spell
 appple misspell
+dog
+catta

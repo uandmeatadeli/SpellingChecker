@@ -1,1 +1,8 @@
-word, 'quoted' well-known non-existent
+nice,'quoted' known? existent
+
+This is a test file with some hyphenated words like long-term and well-known. These words should be correctly spelled.
+
+well-knownn
+
+
+

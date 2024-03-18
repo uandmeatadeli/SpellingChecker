@@ -1,5 +1,5 @@
 apple - correctly spelled
 appple - misspell
 Hello, HELLO, and HeLlO - case sensitivity check
-'quoted', well-known, and non-existent - punctuation and hyphens
+'quoted', well-known, and non-existentt - punctuation and hyphens
 Large text block for performance testing starts here.
