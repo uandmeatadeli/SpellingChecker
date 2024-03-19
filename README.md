@@ -136,6 +136,23 @@ Core functionalities of `spchk` include:
 
 ## Test Files
 
+# Installation and Running Instructions
+
+Use "make" command to run Makefile and compile all files:
+
+make
+
+Choose a test and run it using the following commands:
+
+./spchk  <dict_path> <test_file>
+
+Ex: ./spchk  /usr/share/dict/words basic_test.txt
+
+To remove files created by make:
+
+make clean
+
+
 The project includes several test files to validate the functionality of `spchk`, such as `basic_test.txt`, `cap.txt`, `hypen.txt`, `new.txt`, `punc.txt`, and `kanye.txt`. These files contain various test cases, including words with hyphens, punctuation, capitalization variations, and actual lyrics for real-world testing.
 
 ## Building and Running
