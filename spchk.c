@@ -795,15 +795,17 @@ bool checkHyphenatedWord(const char* word) {
 bool checkHyphenatedWord(const char* word) {
     char temp[MAX_WORD_LENGTH];
     strcpy(temp, word); // Make a copy of the word to work with
-    
+
     char* token = strtok(temp, "-"); // Split the word at hyphens
     while (token != NULL) {
-        char tempWord[MAX_WORD_LENGTH] = {0};
-        strcpy(tempWord, token); // Copy the token to tempWord for processing
-        
-        // Check each component of the hyphenated word
-        if (!findWordInDictionary(tempWord)) {
-            return false; // If any component is not in the dictionary, the whole word is incorrect
+        // Check the original token and its lowercase version
+        if (!findWordInDictionary(token)) {
+            char lowerToken[MAX_WORD_LENGTH] = {0};
+            toLowerCase(token, lowerToken); // Convert token to lowercase
+            if (!findWordInDictionary(lowerToken)) {
+                // If neither the original nor the lowercase version is found
+                return false;
+            }
         }
         token = strtok(NULL, "-"); // Move to the next component
     }
