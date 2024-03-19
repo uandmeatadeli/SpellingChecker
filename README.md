@@ -172,7 +172,10 @@ test 13: ./spchk /usr/share/dict/words testfile1.txt
 test 14: ./spchk /usr/share/dict/words punc.txt
 test 15: ./spchk /usr/share/dict/words punctuation_hyphens_test.txt
 test 16: ./spchk /usr/share/dict/words new.txt
-test 17: ./spchk /usr/share/dict/words test
+test 17: ./spchk /usr/share/dict/words test 
+
+test 17 is for directory traversal
+the rest of the test cases match with the name. Please check each file! Below is a fast way to run the code. 
 
 combined part 1: ./spchk /usr/share/dict/words test new.txt punctuation_hyphens_test.txt punc.txt testfile1.txt test2.txt mixed_content_test.txt large_file_test.txt hypen1.txt hypen.txt empty.txt case_sensitivity_test.txt cap.txt  basic_test.txt
 
@@ -206,7 +209,76 @@ The `spchk` program undergoes rigorous testing to cover a wide range of scenario
 - **Songs (`kanye.txt`)**: Uses complex real-world text structures for testing.
 - **Extra Tests**: Additional tests designed to uncover edge cases.
 
+
+
 #Strategy/testing/features
+## 1. Finding and Opening All Specified Files, Including Directory Traversal
+
+This component is responsible for identifying all files that need to be spell-checked, including those within specified directories. The implementation details are as follows:
+
+- **Directory Traversal (`traverseDir`)**: When provided with a directory path, `spchk` recursively traverses the directory structure, processing all `.txt` files while skipping over any files or directories that begin with a dot (`.`). This functionality ensures that `spchk` can handle complex directory structures and selectively process relevant text files.
+
+- **File Identification**: For each argument passed to `spchk`, it determines whether the argument is a file or a directory. Files are processed directly, while directories trigger the traversal process to find all contained `.txt` files.
+
+## 2. Reading the File and Generating a Sequence of Position-Annotated Words
+
+After identifying the files, the program reads through the text, breaking it into individual words and noting their positions within the text:
+
+- **Buffered File Reading (`processFile`)**: `spchk` reads files in chunks, buffering the content for efficient processing. As it reads, it identifies words based on transitions from non-word to word characters (and vice versa), using whitespace and punctuation to determine boundaries.
+
+- **Position Annotation**: Each word is annotated with its line and column number within the file. This information is crucial for reporting the location of any spelling errors found, allowing users to easily locate and correct these errors.
+
+## 3. Checking Whether a Word Is Contained in the Dictionary
+
+The final step involves verifying the spelling of each identified word against the loaded dictionary:
+
+- **Word Lookup (`findWordInDictionary`)**: For each word extracted from the input files, `spchk` checks whether the word exists in the dictionary loaded at the start of the program. This lookup is currently performed using a linear search, comparing the word against each entry in the dictionary array.
+
+- **Handling Variations**: `spchk` accommodates variations in word spelling due to capitalization and hyphenation. It applies specific rules to determine if a word, in any of its acceptable forms, is present in the dictionary. This includes allowing all-caps versions of words and checking each component of hyphenated words individually.
+
+- **Error Reporting**: If a word is not found in the dictionary, `spchk` reports the misspelling along with its position in the original text file, following the specified format for error messages.
+
+These components work together to provide comprehensive spell-checking functionality, demonstrating the program's methodical approach to processing, analyzing, and verifying text against a standard dictionary.
+
+# Handling Special Word Cases in `spchk`
+
+The `spchk` program is designed to intelligently handle various common word variations and punctuation scenarios, ensuring accurate spell-checking against the provided dictionary. Here's how it addresses each case:
+
+## Trailing Punctuation and Leading Characters
+
+To avoid inaccuracies due to common sentence punctuation, `spchk` ignores punctuation marks at the end of words, as well as quotation marks and brackets at the start of words.
+
+- **Implementation**: The function `stripPunctuation` is used to trim unwanted characters from the beginning and end of each word before it is checked against the dictionary. This ensures that words are not incorrectly flagged as misspelled due to trailing punctuation or leading quotation marks/brackets.
+
+## Hyphens
+
+Hyphenated words are treated as correctly spelled if all constituent words, separated by hyphens, are correctly spelled.
+
+- **Implementation**: `checkHyphenatedWord` splits a hyphenated word into its components and checks each part against the dictionary using `findWordInDictionary`. This recursive approach ensures that hyphenated words are thoroughly validated, adhering to the spell-checking rules.
+
+## Capitalization
+
+`spchk` recognizes three variations of word capitalization: regular (all lowercase), initial capital, and all capitals. Special attention is given to dictionary words with specific capitalization, such as proper nouns.
+
+- **Implementation**:
+    - Regular and initial capitalization handling is primarily managed within the `checkWord` function, where a word's lowercase version is checked against the dictionary to accommodate for regular and initial capitalization.
+    - For all-capital words, the program checks if the lowercase equivalent exists in the dictionary, allowing words like "HELLO" if "hello" is present.
+    - Proper noun handling (e.g., "MacDonald") is particularly addressed by ensuring the dictionary word's exact case is matched or its all-uppercase version is used. This is demonstrated in the way `checkWord` and `checkSpecialUpperCase` functions work together to validate capitalization variations and special cases.
+
+## Test Cases and Adherence
+
+- **Trailing Punctuation**: Test files containing words with punctuation at the end (e.g., `punc.txt`) successfully demonstrate the program's ability to ignore these characters and verify the spelling of the actual word.
+- **Hyphens**: The `hypen.txt` test file contains various hyphenated words, showing the program's capability to split these into components and verify each part's spelling.
+- **Capitalization**: Through different test files, such as `cap.txt` and `new.txt`, the program is tested against words with varying capitalization, including proper nouns. The results confirm its adherence to handling these variations correctly.
+
+
+the test cases above show how these cases are all passed and work. Run the ones above to check
+
+# Handling Directories and Reporting Errors in `spchk`
+
+the code correctly goes through the directories and follows the assignment details. The file test and running the code above is an example of this. 
+
+Also the the Error reporting words as directed
 
 
 ## Correctness
