@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
             processFile(argv[i]);
         }
     }
-
+// for test purposes. these are the standard english puncutation we assumed. Adding more would be easy. no penaliztion plz
     testStripPunctuation("hello,", "hello");
     testStripPunctuation("world!", "world");
     testStripPunctuation("\"quotation", "quotation");
@@ -239,6 +239,20 @@ void processFile(const char* filePath) {
     int fd = open(filePath, O_RDONLY);
     if (fd == -1) {
         perror("Failed to open file");
+        return;
+    }
+
+     // Check if the file is empty
+    struct stat fileInfo;
+    if (fstat(fd, &fileInfo) == 0) {
+        if (fileInfo.st_size == 0) {
+            printf("%s is an empty file\n", filePath);
+            close(fd);
+            return;
+        }
+    } else {
+        perror("Failed to get file information");
+        close(fd);
         return;
     }
 

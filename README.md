@@ -175,7 +175,7 @@ test 16: ./spchk /usr/share/dict/words new.txt
 test 17: ./spchk /usr/share/dict/words test 
 
 test 17 is for directory traversal
-the rest of the test cases match with the name. Please check each file! Below is a fast way to run the code. 
+the rest of the test cases match with the name. Please check each file! Below is a fast way to run the code. Empty file prints that no words are there and that it is "is an empty file". 
 
 combined part 1: ./spchk /usr/share/dict/words test new.txt punctuation_hyphens_test.txt punc.txt testfile1.txt test2.txt mixed_content_test.txt large_file_test.txt hypen1.txt hypen.txt empty.txt case_sensitivity_test.txt cap.txt  basic_test.txt
 
